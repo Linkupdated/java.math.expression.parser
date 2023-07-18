@@ -60,7 +60,7 @@ public class FunctionXs {
 		for (final String string : variables) {
 			vars.add(string.trim().replaceAll(" ", "").toLowerCase());
 		}
-		return eval(f, values, vars);
+		return eval(f, values, vars, 0);
 	}
 
 	/**
@@ -72,13 +72,18 @@ public class FunctionXs {
 	 * @return the double
 	 * @throws CalculatorException the calculator exception
 	 */
-	private double eval(final String f, final List<Double> values, final List<String> variables)
+	private double eval(final String f, final List<Double> values, final List<String> variables, int maxCount)
 			throws CalculatorException {
 		double value = 0;
 		String number = "";
 		String function = "";
 		boolean hasNumber = false;
 		boolean hasFunction = false;
+		
+		if(maxCount > 1000) {
+			System.out.println("Max eval count reached (1000) for eval on expression parser plugin, value: "+value);
+			return value;
+		}
 
 		for (int i = 0; i < f.length(); i++) {
 			final char character = f.charAt(i);
@@ -98,20 +103,20 @@ public class FunctionXs {
 				if (hasNumber) {
 					final Double numb = new Double(number);
 					final String new_f = f.substring(i + 1, f.length());
-					value = numb + eval(new_f, values, variables);
+					value = numb + eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasNumber = false;
 					number = "";
 				} else if (hasFunction) {
 					final String new_f = f.substring(i + 1, f.length());
-					value = eval(function, values, variables) + eval(new_f, values, variables);
+					value = eval(function, values, variables, maxCount+1) + eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasFunction = false;
 					function = "";
 
 				} else {
 					final String new_f = f.substring(i + 1, f.length());
-					value = value + eval(new_f, values, variables);
+					value = value + eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 				}
 
@@ -120,19 +125,19 @@ public class FunctionXs {
 				if (hasNumber) {
 					final Double numb = new Double(number);
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = numb * eval(new_f, values, variables);
+					value = numb * eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasNumber = false;
 					number = "";
 				} else if (hasFunction) {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = eval(function, values, variables) * eval(new_f, values, variables);
+					value = eval(function, values, variables, maxCount+1) * eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasFunction = false;
 					function = "";
 				} else {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = value * eval(new_f, values, variables);
+					value = value * eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 				}
 
@@ -141,20 +146,20 @@ public class FunctionXs {
 				if (hasNumber) {
 					final Double numb = new Double(number);
 					final String new_f = nextMinusFunction(f.substring(i + 1, f.length()));
-					value = numb - eval(new_f, values, variables);
+					value = numb - eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasNumber = false;
 					number = "";
 				} else if (hasFunction) {
 					final String new_f = nextMinusFunction(f.substring(i + 1, f.length()));
-					value = eval(function, values, variables) - eval(new_f, values, variables);
+					value = eval(function, values, variables, maxCount+1) - eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasFunction = false;
 					function = "";
 
 				} else {
 					final String new_f = nextMinusFunction(f.substring(i + 1, f.length()));
-					value = value - eval(new_f, values, variables);
+					value = value - eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 				}
 
@@ -163,20 +168,20 @@ public class FunctionXs {
 				if (hasNumber) {
 					final Double numb = new Double(number);
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = numb / eval(new_f, values, variables);
+					value = numb / eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasNumber = false;
 					number = "";
 				} else if (hasFunction) {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = eval(function, values, variables) / eval(new_f, values, variables);
+					value = eval(function, values, variables, maxCount+1) / eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 					hasFunction = false;
 					function = "";
 
 				} else {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = value / eval(new_f, values, variables);
+					value = value / eval(new_f, values, variables, maxCount+1);
 					i += new_f.length();
 				}
 
@@ -185,20 +190,20 @@ public class FunctionXs {
 				if (hasNumber) {
 					final Double numb = new Double(number);
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = StrictMath.pow(numb.doubleValue(), eval(new_f, values, variables));
+					value = StrictMath.pow(numb.doubleValue(), eval(new_f, values, variables, maxCount+1));
 					i += new_f.length();
 					hasNumber = false;
 					number = "";
 				} else if (hasFunction) {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = StrictMath.pow(eval(function, values, variables), eval(new_f, values, variables));
+					value = StrictMath.pow(eval(function, values, variables, maxCount+1), eval(new_f, values, variables, maxCount+1));
 					i += new_f.length();
 					hasFunction = false;
 					function = "";
 
 				} else {
 					final String new_f = nextFunction(f.substring(i + 1, f.length()));
-					value = StrictMath.pow(value, eval(new_f, values, variables));
+					value = StrictMath.pow(value, eval(new_f, values, variables, maxCount+1));
 					i += new_f.length();
 				}
 
@@ -219,59 +224,59 @@ public class FunctionXs {
 				if (hasFunction) {
 					if (Constants.SIN.equals(function)) {
 						if (degree) {
-							value = StrictMath.sin(StrictMath.toRadians(eval(new_f, values, variables)));
+							value = StrictMath.sin(StrictMath.toRadians(eval(new_f, values, variables, maxCount+1)));
 						} else {
-							value = StrictMath.sin(eval(new_f, values, variables));
+							value = StrictMath.sin(eval(new_f, values, variables, maxCount+1));
 						}
 
 					} else if (Constants.COS.equals(function)) {
 						if (degree) {
-							value = StrictMath.cos(StrictMath.toRadians(eval(new_f, values, variables)));
+							value = StrictMath.cos(StrictMath.toRadians(eval(new_f, values, variables, maxCount+1)));
 						} else {
-							value = StrictMath.cos(eval(new_f, values, variables));
+							value = StrictMath.cos(eval(new_f, values, variables, maxCount+1));
 						}
 					} else if (Constants.TAN.equals(function)) {
 						if (degree) {
-							value = StrictMath.tan(StrictMath.toRadians(eval(new_f, values, variables)));
+							value = StrictMath.tan(StrictMath.toRadians(eval(new_f, values, variables, maxCount+1)));
 						} else {
-							value = StrictMath.tan(eval(new_f, values, variables));
+							value = StrictMath.tan(eval(new_f, values, variables, maxCount+1));
 						}
 
 					} else if (Constants.SINH.equals(function)) {
-						value = StrictMath.sinh(eval(new_f, values, variables));
+						value = StrictMath.sinh(eval(new_f, values, variables, maxCount+1));
 
 					} else if (Constants.COSH.equals(function)) {
-						value = StrictMath.cosh(eval(new_f, values, variables));
+						value = StrictMath.cosh(eval(new_f, values, variables, maxCount+1));
 
 					} else if (Constants.TANH.equals(function)) {
-						value = StrictMath.tanh(eval(new_f, values, variables));
+						value = StrictMath.tanh(eval(new_f, values, variables, maxCount+1));
 
 					} else if (Constants.ASIN.equals(function)) {
 						if (degree) {
-							value = StrictMath.asin(eval(new_f, values, variables)) * (180 / StrictMath.PI);
+							value = StrictMath.asin(eval(new_f, values, variables, maxCount+1)) * (180 / StrictMath.PI);
 						} else {
-							value = StrictMath.asin(eval(new_f, values, variables));
+							value = StrictMath.asin(eval(new_f, values, variables, maxCount+1));
 						}
 					} else if (Constants.ACOS.equals(function)) {
 						if (degree) {
-							value = StrictMath.acos(eval(new_f, values, variables)) * (180 / StrictMath.PI);
+							value = StrictMath.acos(eval(new_f, values, variables, maxCount+1)) * (180 / StrictMath.PI);
 						} else {
-							value = StrictMath.acos(eval(new_f, values, variables));
+							value = StrictMath.acos(eval(new_f, values, variables, maxCount+1));
 						}
 					} else if (Constants.ATAN.equals(function)) {
 						if (degree) {
-							value = StrictMath.atan(eval(new_f, values, variables)) * (180 / StrictMath.PI);
+							value = StrictMath.atan(eval(new_f, values, variables, maxCount+1)) * (180 / StrictMath.PI);
 						} else {
-							value = StrictMath.atan(eval(new_f, values, variables));
+							value = StrictMath.atan(eval(new_f, values, variables, maxCount+1));
 						}
 					} else if (Constants.LN.equals(function)) {
-						value = StrictMath.log(eval(new_f, values, variables));
+						value = StrictMath.log(eval(new_f, values, variables, maxCount+1));
 					} else if (Constants.LOG.equals(function)) {
-						value = StrictMath.log10(eval(new_f, values, variables));
+						value = StrictMath.log10(eval(new_f, values, variables, maxCount+1));
 					} else if (Constants.SQRT.equals(function)) {
-						value = StrictMath.sqrt(eval(new_f, values, variables));
+						value = StrictMath.sqrt(eval(new_f, values, variables, maxCount+1));
 					} else if (Constants.CBRT.equals(function)) {
-						value = StrictMath.cbrt(eval(new_f, values, variables));
+						value = StrictMath.cbrt(eval(new_f, values, variables, maxCount+1));
 					} else {
 						throw new CalculatorException("The function is not well-formed");
 					}
@@ -280,7 +285,7 @@ public class FunctionXs {
 					function = "";
 
 				} else {
-					value = eval(new_f, values, variables);
+					value = eval(new_f, values, variables, maxCount+1);
 				}
 				i += new_f.length() + 1;
 

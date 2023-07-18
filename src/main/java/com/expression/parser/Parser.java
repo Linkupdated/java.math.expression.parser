@@ -16,6 +16,9 @@ import com.expression.parser.util.Point;
  * The Class Parser.
  */
 public class Parser {
+	
+	//mvn install:install-file -Dfile="C:\Users\seb29\eclipse-workspace-2021-09\java.math.expression.parser-3.3.0\target\com.expression.parser-3.3.0.jar" -DgroupId=com.expression.parser -DartifactId=com.expression.parser -Dversion=3.3.0 -Dpackaging=jar
+	//Command to execute to reupdate the maven
 
 	/**
 	 * Simple eval.
@@ -25,19 +28,14 @@ public class Parser {
 	 * @param function the function
 	 * @return the double
 	 */
-	public static double simpleEval(final String function) {
+	public static double simpleEval(final String function) throws CalculatorException {
 
 		double result = 0;
 		FunctionX f_x = null;
 
 		if ((function != null) && !function.isEmpty()) {
 			f_x = new FunctionX(function);
-			try {
-				result = f_x.getF_xo(0);
-			} catch (final CalculatorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			result = f_x.getF_xo(0);
 		}
 
 		return result;
@@ -52,29 +50,24 @@ public class Parser {
 	 * @param function the function
 	 * @return the parser result
 	 */
-	public static ParserResult eval(final String function) {
+	public static ParserResult eval(final String function) throws CalculatorException {
 
 		ParserResult result = new ParserResult();
 		FunctionX f_x = null;
 
 		if ((function != null) && !function.isEmpty()) {
-			try {
 
-				if ((function.toLowerCase().contains("j")) && !function.toLowerCase().contains("x")) {
+			if ((function.toLowerCase().contains("j")) && !function.toLowerCase().contains("x")) {
 
-					result = eval(function, new Point("x", new Complex(1, 0)));
-				} else if (!function.toLowerCase().contains("x")) {
-					f_x = new FunctionX(function);
-					result.setValue(f_x.getF_xo(0));
+				result = eval(function, new Point("x", new Complex(1, 0)));
+			} else if (!function.toLowerCase().contains("x")) {
+				f_x = new FunctionX(function);
+				result.setValue(f_x.getF_xo(0));
 
-				} else {
-					throw new CalculatorException("function is not well defined");
-				}
-
-			} catch (final CalculatorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} else {
+				throw new CalculatorException("function is not well defined");
 			}
+
 		}
 
 		return result;
@@ -89,7 +82,7 @@ public class Parser {
 	 *
 	 * @return the parser result: complex or real value
 	 */
-	public static ParserResult eval(final String function, final Point... values) {
+	public static ParserResult eval(final String function, final Point... values) throws CalculatorException {
 
 		final ParserResult result = new ParserResult();
 		FunctionX f_x = null;
@@ -103,47 +96,36 @@ public class Parser {
 				complexFunction = new ComplexFunction(function);
 				final List<Complex> valuesList = pointToComplexValue(values);
 				final List<String> varsList = pointToVar(values);
-				try {
-					result.setComplexValue(complexFunction.getValue(valuesList, varsList));
-				} catch (final CalculatorException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+
+				result.setComplexValue(complexFunction.getValue(valuesList, varsList));
 
 			} else {
 
-				try {
+				if (values != null) {
+					if (values.length == 1) {
 
-					if (values != null) {
-						if (values.length == 1) {
+						f_x = new FunctionX(function);
 
-							f_x = new FunctionX(function);
+						if ((values[0].getStringValue() != null && !values[0].getStringValue().isEmpty())) {
+							final ParserResult evaluatedValue = Parser.eval(values[0].getStringValue());
+							result.setValue(f_x.getF_xo(evaluatedValue.getValue()));
 
-							if ((values[0].getStringValue() != null && !values[0].getStringValue().isEmpty())) {
-								final ParserResult evaluatedValue = Parser.eval(values[0].getStringValue());
-								result.setValue(f_x.getF_xo(evaluatedValue.getValue()));
-
-							} else {
-								result.setValue(f_x.getF_xo(values[0].getValue()));
-							}
-
-						} else if (values.length > 1) {
-							f_xs = new FunctionXs(function);
-							final List<Double> valuesList = pointToValue(values);
-							final List<String> varsList = pointToVar(values);
-							result.setValue(f_xs.getValue(valuesList, varsList));
+						} else {
+							result.setValue(f_x.getF_xo(values[0].getValue()));
 						}
 
-					} else {
-						f_x = new FunctionX(function);
-						result.setValue(f_x.getF_xo(0));
+					} else if (values.length > 1) {
+						f_xs = new FunctionXs(function);
+						final List<Double> valuesList = pointToValue(values);
+						final List<String> varsList = pointToVar(values);
+						result.setValue(f_xs.getValue(valuesList, varsList));
 					}
-				}
 
-				catch (final CalculatorException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} else {
+					f_x = new FunctionX(function);
+					result.setValue(f_x.getF_xo(0));
 				}
+				
 			}
 		}
 		return result;
@@ -154,29 +136,23 @@ public class Parser {
 	 *
 	 * Simple Eval for real functions with real vars fx = 1 + 2*x+y; x = 2 and y= 5
 	 */
-	public static double eval(final String function, final String[] vars, final Double[] values) {
+	public static double eval(final String function, final String[] vars, final Double[] values) throws CalculatorException {
 
 		double result = 0;
 		FunctionX f_x = null;
 		FunctionXs f_xs = null;
 		if ((function != null) && !function.isEmpty()) {
-			try {
-				if ((((vars == null) || (vars.length < 1)) && (values == null)) || (values.length < 1)) {
-					f_x = new FunctionX(function);
-					result = f_x.getF_xo(0);
-				} else if ((values != null) && (values.length == 1)) {
-					f_x = new FunctionX(function);
-					result = f_x.getF_xo(values[0]);
-				} else if ((vars != null) && (vars.length > 1) && (values != null) && (values.length > 1)) {
-					f_xs = new FunctionXs(function);
-					final List<Double> valuesList = Arrays.asList(values);
-					final List<String> varsList = Arrays.asList(vars);
-					result = f_xs.getValue(valuesList, varsList);
-				}
-
-			} catch (final CalculatorException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if ((((vars == null) || (vars.length < 1)) && (values == null)) || (values.length < 1)) {
+				f_x = new FunctionX(function);
+				result = f_x.getF_xo(0);
+			} else if ((values != null) && (values.length == 1)) {
+				f_x = new FunctionX(function);
+				result = f_x.getF_xo(values[0]);
+			} else if ((vars != null) && (vars.length > 1) && (values != null) && (values.length > 1)) {
+				f_xs = new FunctionXs(function);
+				final List<Double> valuesList = Arrays.asList(values);
+				final List<String> varsList = Arrays.asList(vars);
+				result = f_xs.getValue(valuesList, varsList);
 			}
 		}
 
@@ -190,7 +166,7 @@ public class Parser {
 	 * @param values the values
 	 * @return the list
 	 */
-	private static List<Double> pointToValue(final Point... values) {
+	private static List<Double> pointToValue(final Point... values) throws CalculatorException {
 		final List<Double> result = new ArrayList<Double>();
 		for (int i = 0; i < values.length; i++) {
 			if ((values[i].getStringValue() != null && !values[i].getStringValue().isEmpty())) {
@@ -209,7 +185,7 @@ public class Parser {
 	 * @param values the values
 	 * @return the list
 	 */
-	private static List<Complex> pointToComplexValue(final Point... values) {
+	private static List<Complex> pointToComplexValue(final Point... values) throws CalculatorException {
 		final List<Complex> result = new ArrayList<Complex>();
 		for (int i = 0; i < values.length; i++) {
 			if (values[i].isComplex() && (values[i].getStringValue() == null || values[i].getStringValue().isEmpty())) {
@@ -235,7 +211,7 @@ public class Parser {
 	 * @param values the values
 	 * @return true, if successful
 	 */
-	private static boolean pointIsComplex(final Point... values) {
+	private static boolean pointIsComplex(final Point... values) throws CalculatorException {
 
 		boolean result = false;
 		for (int i = 0; i < values.length; i++) {

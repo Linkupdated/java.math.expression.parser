@@ -73,8 +73,7 @@ public class ComplexFunction {
 	 * @return the complex
 	 * @throws CalculatorException the calculator exception
 	 */
-	private Complex eval(final String f, final List<Complex> values, final List<String> variables)
-			throws CalculatorException {
+	private Complex eval(final String f, final List<Complex> values, final List<String> variables) throws CalculatorException {
 		Complex value = new Complex(0, 0);
 		String number = "";
 		String function = "";
